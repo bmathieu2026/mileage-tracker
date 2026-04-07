@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b5fff" />
+  <title>Mileage Tracker</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Mileage</h1>
+    <button id="nav-settings" class="icon-btn" aria-label="Settings">⚙︎</button>
+  </header>
+
+  <main id="view-main" class="view">
+    <button id="record-btn" class="primary-btn">Record Mileage</button>
+    <p id="status" class="status" aria-live="polite"></p>
+
+    <section id="recent">
+      <h2>Recent trips</h2>
+      <ul id="recent-list" class="trip-list"></ul>
+    </section>
+  </main>
+
+  <main id="view-settings" class="view hidden">
+    <button id="nav-back" class="link-btn">← Back</button>
+    <h2>Settings</h2>
+
+    <label class="field">
+      <span>Google Apps Script URL</span>
+      <input id="script-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
+    </label>
+    <button id="save-url" class="secondary-btn">Save URL</button>
+
+    <h3>Saved starting locations</h3>
+    <ul id="preset-list" class="preset-list"></ul>
+
+    <details>
+      <summary>Add a preset</summary>
+      <label class="field"><span>Name</span><input id="preset-name" placeholder="Home" /></label>
+      <label class="field"><span>Address</span><input id="preset-address" placeholder="123 Main St, City" /></label>
+      <button id="preset-add" class="secondary-btn">Add</button>
+    </details>
+  </main>
+
+  <!-- Modal: pick start -->
+  <dialog id="dlg-start">
+    <form method="dialog">
+      <h3>Starting location</h3>
+      <ul id="start-presets" class="preset-list"></ul>
+      <label class="field">
+        <span>Or enter address</span>
+        <input id="start-address" placeholder="123 Main St, City" />
+      </label>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="start-confirm" value="confirm" class="secondary-btn">Next</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Modal: purpose -->
+  <dialog id="dlg-purpose">
+    <form method="dialog">
+      <h3>Trip purpose</h3>
+      <label class="field"><span>Purpose</span><input id="purpose-input" placeholder="Client visit" /></label>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button value="confirm" class="secondary-btn">Next</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Modal: summary -->
+  <dialog id="dlg-summary">
+    <form method="dialog">
+      <h3>Trip summary</h3>
+      <dl id="summary-dl"></dl>
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button value="save" class="primary-btn">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
