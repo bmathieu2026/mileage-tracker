@@ -39,6 +39,72 @@ Quick options:
 4. Enter a trip purpose.
 5. Review the summary → **Save**. The row appears in your Google Sheet.
 
+## Redeploying updates
+
+There are **two independent pieces** that may need redeploying when you make changes. Pick the one(s) that match what you edited.
+
+### A. Frontend changes (`index.html`, `app.js`, `styles.css`, `manifest.webmanifest`, `sw.js`)
+
+If you edited any file the browser loads, you need to push the new files to your host **and** force the phone to fetch them past the service worker cache.
+
+#### A1. Push the new files
+
+**GitHub Pages (web upload):**
+1. Open your `mileage-tracker` repo on github.com.
+2. Click into the file you changed → click the **pencil ✏ icon** → paste the new contents → scroll down → **Commit changes**.
+3. For multiple files, use **Add file → Upload files** and drag the changed files in (GitHub will overwrite existing ones with the same name) → **Commit changes**.
+4. Wait ~30–60 seconds for GitHub Pages to rebuild. You can watch progress under the repo's **Actions** tab — a green checkmark means the new version is live.
+
+**GitHub Pages (terminal):** from inside the repo folder:
+```
+git add .
+git commit -m "Update mileage tracker"
+git push
+```
+
+**Netlify Drop:** re-drag the entire `mileage-tracker` folder onto https://app.netlify.com/drop. Note: Netlify Drop gives you a *new* URL each time unless you have an account and claim the site.
+
+#### A2. Bust the service worker cache (IMPORTANT)
+
+The PWA caches the app shell so it works offline. After deploying, your phone may keep showing the old version until the service worker updates.
+
+**Bump the cache version** *before* you push:
+1. Open [sw.js](sw.js).
+2. Change `const CACHE = 'mileage-v1';` to `'mileage-v2'` (then `v3`, `v4`, etc. on each release).
+3. Save and push along with your other changes. The new service worker will detect the version change, throw away the old cache, and serve the fresh files on next launch.
+
+**On the phone, force a refresh:**
+- iOS Safari: close all tabs of the app, then reopen the home-screen icon. If still stale: Settings → Safari → Advanced → Website Data → search "github.io" or your domain → swipe to delete → reopen.
+- Android Chrome: long-press the home-screen icon → App info → Storage → **Clear storage**, then reopen.
+- Quickest universal fix: delete the home-screen icon and re-add it from the browser.
+
+### B. Apps Script changes (`apps-script/Code.gs`)
+
+⚠️ **Saving in the Apps Script editor is NOT enough.** A deployed web app keeps serving the *previously deployed version* until you explicitly publish a new one.
+
+1. Open your Mileage Sheet → **Extensions → Apps Script**.
+2. Paste the new `Code.gs` contents over the old code → click **Save** (💾).
+3. Click **Deploy → Manage deployments** (top right).
+4. Find your existing deployment in the list and click the **pencil ✏ icon** on its row.
+5. In the **Version** dropdown, choose **New version**.
+6. Optionally add a description like `Fix sheet name lookup`.
+7. Click **Deploy**.
+8. **The `/exec` URL stays the same** — you do NOT need to update the URL in your phone's Settings. (If you instead use **New deployment**, you get a brand-new URL and would have to re-paste it on every device.)
+9. If your changes use a new Google API or scope, you may be re-prompted to **Authorize access** — click through the same way as the first deploy.
+
+#### Verify the redeploy worked
+- Visit the `/exec` URL in a browser — `doGet` should still return `Mileage tracker endpoint OK` (or whatever you changed it to).
+- Record a test trip and check that the new behavior shows up in the sheet.
+- If something looks wrong, open the Apps Script project → **Executions** (clock icon in left sidebar) and inspect the most recent `doPost` for errors.
+
+### C. Sheet structure changes (adding/renaming/reordering columns)
+
+If you change the column layout in the Mileage tab:
+1. Update the header row in the sheet.
+2. Update the `appendRow([...])` order in [apps-script/Code.gs](apps-script/Code.gs) to match.
+3. Redeploy the Apps Script (Section B above).
+4. If the frontend sends new fields, also update [app.js](app.js) and redeploy the frontend (Section A).
+
 ## Notes & limitations
 
 - **OSRM demo server** (`router.project-osrm.org`) is best-effort and rate-limited. Fine for personal use; for heavier use, self-host OSRM or swap to OpenRouteService / Mapbox.
